@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Таблица лидеров</title>
+  <style>
+    :root {
+      --bg-color: #1a1b1e;
+      --card-bg: #232427;
+      --text-color: #f1f1f1;
+      --muted-text: #9ca3af;
+      --accent: #00aaff;
+      --row-hover: #2f3033;
+    }
+
+    body {
+      font-family: "Inter", system-ui, sans-serif;
+      background: var(--bg-color);
+      color: var(--text-color);
+      margin: 0;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      width: 100%;
+      max-width: 500px;
+      margin-bottom: 8px;
+    }
+
+    header img {
+      position: absolute;
+      left: 16px;
+      height: 40px;
+      width: 40px;
+      border-radius: 8px;
+      object-fit: cover;
+    }
+
+    header h1 {
+      font-size: 1.6rem;
+      text-align: center;
+      margin: 0;
+      color: var(--text-color);
+      letter-spacing: 0.5px;
+    }
+
+    .leaderboard {
+      background: var(--card-bg);
+      border-radius: 16px;
+      box-shadow: 0 4px 25px rgba(0, 0, 0, 0.3);
+      overflow: hidden;
+      width: 100%;
+      max-width: 500px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 14px 18px;
+      font-size: 0.95rem;
+    }
+
+    th {
+      background: #2b2c2f;
+      color: var(--muted-text);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    tbody tr {
+      transition: background 0.2s ease-in-out;
+    }
+
+    tbody tr:hover {
+      background: var(--row-hover);
+    }
+
+    .rank {
+      width: 50px;
+      text-align: center;
+      font-size: 1.2rem;
+    }
+
+    .score {
+      text-align: right;
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    .loading {
+      text-align: center;
+      padding: 16px;
+      color: var(--muted-text);
+    }
+
+    /* Медали — чуть ярче */
+    tr:nth-child(1) .rank { color: #ffd700; } /* gold */
+    tr:nth-child(2) .rank { color: #c0c0c0; } /* silver */
+    tr:nth-child(3) .rank { color: #cd7f32; } /* bronze */
+  </style>
+</head>
+<body>
+  <header>
+    <img src="/logo.png" alt="Logo" />
+    <h1>Таблица лидеров</h1>
+  </header>
+
+  <div class="leaderboard">
+    <table id="leaderboard">
+      <thead>
+        <tr>
+          <th class="rank">#</th>
+          <th>Имя</th>
+          <th class="score">Очки</th>
+        </tr>
+      </thead>
+      <tbody id="leaderboard-body">
+        <tr><td colspan="3" class="loading">Загрузка...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script>
+    const API_URL = "https://dima.host.continental-c.com/miniapp/leaderboard?t=" + Date.now();
+
+    async function loadLeaderboard() {
+      try {
+        const res = await fetch(API_URL);
+        const data = await res.json();
+
+        const tbody = document.getElementById("leaderboard-body");
+        tbody.innerHTML = "";
+
+        data.forEach((player, index) => {
+          const tr = document.createElement("tr");
+
+          const rankEmoji = ["🥇", "🥈", "🥉"][index] || index + 1;
+          const name =
+            (player.user && (player.user.name || player.user.username)) ||
+            "Аноним";
+
+          tr.innerHTML = `
+            <td class="rank">${rankEmoji}</td>
+            <td>${name}</td>
+            <td class="score">${player.score}</td>
+          `;
+
+          tbody.appendChild(tr);
+        });
+      } catch (err) {
+        document.getElementById("leaderboard-body").innerHTML =
+          `<tr><td colspan="3" class="loading">Ошибка загрузки</td></tr>`;
+        console.error(err);
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      loadLeaderboard();
+      if (window.Telegram?.WebApp) {
+        Telegram.WebApp.expand();
+        Telegram.WebApp.ready();
+      }
+    });
+  </script>
+</body>
+</html>
