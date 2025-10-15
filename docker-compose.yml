@@ -66,8 +66,7 @@ services:
       STATIC_DIR: ${STATIC_DIR}
       FRONTEND_DIR: ${FRONTEND_DIR}
     ports:
-      - "443:8080"
-      - "80:8080"
+      - "127.0.0.1:8080:8080"
     volumes:
       - /etc/letsencrypt:/etc/letsencrypt:ro
     depends_on:
