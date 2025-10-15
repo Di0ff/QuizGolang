@@ -11,7 +11,6 @@ import (
 func (s *Service) Find(tgID int64) (user *models.Users, err error) {
 	user, err = s.repo.GetUser(tgID)
 	if err != nil {
-		s.log.Error("Ошибка! Пользователь не найден", zap.Int64("telegram_id", tgID), zap.Error(err))
 		return nil, err
 	}
 

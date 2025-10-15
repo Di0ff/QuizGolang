@@ -3,7 +3,16 @@ package repository
 import "quiz/internal/models"
 
 func (d *Database) AddResult(m *models.Leaderboards) error {
-	return d.DB.Create(m).Error
+	var existing models.Leaderboards
+	err := d.DB.Where("user_id = ?", m.UserID).First(&existing).Error
+
+	if err != nil {
+		return d.DB.Create(m).Error
+	}
+
+	existing.Score += m.Score
+	existing.TotalQuestions += m.TotalQuestions
+	return d.DB.Save(&existing).Error
 }
 
 func (d *Database) GetLeaderboards(limit int) (leaderboards []models.Leaderboards, err error) {

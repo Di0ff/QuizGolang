@@ -61,7 +61,7 @@ func showQuestion(c telebot.Context, session *models.QuizSession, redisStore *re
 	markup := &telebot.ReplyMarkup{}
 	var rows []telebot.Row
 	for i, opt := range options {
-		btn := markup.Data(opt, fmt.Sprintf("answer_%d_%d", session.CurrentIndex, i))
+		btn := markup.Data(opt, fmt.Sprintf("ans:%d:%d", session.CurrentIndex, i))
 		rows = append(rows, markup.Row(btn))
 	}
 	markup.Inline(rows...)
@@ -84,8 +84,13 @@ func HandleAnswer(redisStore *redis.Redis, srv *service.Service) func(c telebot.
 			return c.Respond(&telebot.CallbackResponse{Text: "Сессия истекла или не найдена"})
 		}
 
-		var questionIndex, answerIndex int
-		fmt.Sscanf(data, "answer_%d_%d", &questionIndex, &answerIndex)
+		parts := strings.Split(data, ":")
+		if len(parts) != 3 {
+			return c.Respond(&telebot.CallbackResponse{Text: "Ошибка данных"})
+		}
+
+		questionIndex, _ := strconv.Atoi(parts[1])
+		answerIndex, _ := strconv.Atoi(parts[2])
 
 		q := session.Questions[questionIndex]
 		if answerIndex == q.CorrectOption {
@@ -121,11 +126,10 @@ func finishQuiz(c telebot.Context, session *models.QuizSession, redisStore *redi
 		emoji = "😊"
 	}
 
-	text := fmt.Sprintf("%s Квиз завершён!\n\nПравильных ответов: %d из %d\nРезультат: %d%%",
+	text := fmt.Sprintf("%s Квест завершён!\n\nПравильных ответов: %d из %d",
 		emoji,
 		session.CorrectCount,
-		len(session.Questions),
-		percentage)
+		len(session.Questions))
 
 	return c.Send(text)
 }

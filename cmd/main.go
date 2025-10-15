@@ -59,7 +59,7 @@ func main() {
 	router := routes.Init(db.DB, logger, cfg)
 
 	srv := &http.Server{
-		Addr:    cfg.App.Port,
+		Addr:    ":" + cfg.App.Port,
 		Handler: router,
 	}
 

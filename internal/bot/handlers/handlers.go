@@ -19,6 +19,13 @@ func Start(bot *telebot.Bot, menu *telebot.ReplyMarkup, cfg *config.Cfg, log *lo
 	bot.Handle(telebot.OnCallback, HandleAnswer(redis, srv))
 
 	bot.Handle("🤖 Совет от ИИ", func(c telebot.Context) error {
+		return c.Send("Задай свой вопрос о Go, и я постараюсь помочь!")
+	})
+
+	bot.Handle(telebot.OnText, func(c telebot.Context) error {
+		if c.Text() == "🎯 Пройти квест" || c.Text() == "🤖 Совет от ИИ" || c.Text() == "ℹ️ О боте" || c.Text() == "/start" {
+			return nil
+		}
 		return HandleAI(c, cfg, log)
 	})
 
