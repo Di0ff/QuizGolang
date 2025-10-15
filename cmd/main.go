@@ -64,7 +64,10 @@ func main() {
 	}
 
 	go func() {
-		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		if err := srv.ListenAndServeTLS(
+			"/etc/letsencrypt/live/quizgolang.ru/fullchain.pem",
+			"/etc/letsencrypt/live/quizgolang.ru/privkey.pem",
+		); err != nil && err != http.ErrServerClosed {
 			logger.Fatal("Ошибка запуска сервера")
 		}
 	}()
